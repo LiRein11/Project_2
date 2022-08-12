@@ -1,7 +1,9 @@
 'use strict';
 
 const modals = () => {
-  function bindModal(triggerSelector, modalSelector, closeSelector, closeClickOverlay = true) {
+  let btnPressed = false;
+
+  function bindModal(triggerSelector, modalSelector, closeSelector, destroy = false) {
     const trigger = document.querySelectorAll(triggerSelector),
       modal = document.querySelector(modalSelector),
       close = document.querySelector(closeSelector),
@@ -14,10 +16,17 @@ const modals = () => {
           e.preventDefault(); // Для того, чтобы при нажатии например на ссылку стандартное поведение браузера сбрасывалось
         }
 
+        btnPressed = true;
+
+        if (destroy === true) {
+          item.remove()
+        } // Удаляем триггер, на который произошел клик
+
         windows.forEach(item => {
           item.style.display = 'none';
+          item.classList.add('animated', 'fadeIn'); // Добавление анимации
         });
-
+        
         modal.style.display = 'block';
         document.body.style.overflow = 'hidden'; // Чтобы не было скролла при открытой модалке
         document.body.style.marginRight = `${scroll}px`;
@@ -34,11 +43,10 @@ const modals = () => {
       modal.style.display = 'none';
       document.body.style.overflow = '';
       document.body.style.marginRight = `0px`;
-      // document.body.classList.remove('modal-open');
     });
 
     modal.addEventListener('click', (e) => {
-      if (e.target === modal && closeClickOverlay) {
+      if (e.target === modal) {
         windows.forEach(item => {
           item.style.display = 'none';
         });
@@ -46,15 +54,26 @@ const modals = () => {
         modal.style.display = 'none';
         document.body.style.overflow = '';
         document.body.style.marginRight = `0px`;
-        // document.body.classList.remove('modal-open');
       }
     }); // Добавлено closeClickOverlay чтобы можно было передать false в аргумент и когда открыты нужные модалки клик по подложке не срабатывал
   }
 
   function showModalByTime(selector, time) {
     setTimeout(function () {
-      document.querySelector(selector).style.display = 'block';
-      document.body.style.overflow = 'hidden';
+      let display;
+
+      document.querySelectorAll('[data-modal]').forEach(item => {
+        if (getComputedStyle(item).display !== 'none') {
+          display = 'block';
+        }
+      });
+
+      if (!display) {
+        document.querySelector(selector).style.display = 'block';
+        document.body.style.overflow = 'hidden';
+        let scroll = calcScroll();
+        document.body.style.marginRight = `${scroll}px`;
+      }
     }, time);
   }
 
@@ -73,12 +92,22 @@ const modals = () => {
     return scrollWidth;
   } // Убираем моргание(скачок) при нажатии на кнопку путём убирания размера скролла
 
-  bindModal('.popup_engineer_btn', '.popup_engineer', '.popup_engineer .popup_close');
-  bindModal('.phone_link', '.popup', '.popup .popup_close');
-  bindModal('.popup_calc_btn', '.popup_calc', '.popup_calc_close');
-  bindModal('.popup_calc_button', '.popup_calc_profile', '.popup_calc_profile_close', false);
-  bindModal('.popup_calc_profile_button', '.popup_calc_end', '.popup_calc_end_close', false);
-  // showModalByTime('.popup', 60000);
+  function openByScroll(selector) {
+    window.addEventListener('scroll', () => {
+      let scrollHeight = Math.max(document.documentElement.scrollHeight, document.body.scrollHeight); // Для работоспособности в старых браузерах (оптимизация)
+
+      if (!btnPressed && (window.pageYOffset + document.documentElement.clientHeight >= scrollHeight)) {
+        document.querySelector(selector).click(); // Вызываем событие вручную (клик по подарку)
+      } // Сколько пикселей пользователь отлистал сверху (верхний отступ (pageYOffset)) + тот контент, который виден пользователю сейчас >= полной высоты страницы
+    });
+  } // Проверяем, долистал ли пользователь до конца страницы 
+
+  bindModal('.button-design', '.popup-design', '.popup-design .popup-close');
+  bindModal('.button-consultation', '.popup-consultation', '.popup-consultation .popup-close');
+  bindModal('.fixed-gift', '.popup-gift', '.popup-gift .popup-close', true);
+  openByScroll('.fixed-gift');
+
+  // showModalByTime('.popup-consultation', 60000);
 };
 
 export default modals;
