@@ -31,7 +31,7 @@ const mask = (selector) => {
     });
 
     if (event.type === 'blur') {
-      if (this.valeu.length == 2) {
+      if (this.value.length == 2) {
         this.value = '';
       }
     } else {
