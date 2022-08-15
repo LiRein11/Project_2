@@ -4412,6 +4412,10 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _modules_pictureSize__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ./modules/pictureSize */ "./src/js/modules/pictureSize.js");
 /* harmony import */ var _modules_accordion__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ./modules/accordion */ "./src/js/modules/accordion.js");
 /* harmony import */ var _modules_burger__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ./modules/burger */ "./src/js/modules/burger.js");
+/* harmony import */ var _modules_scrolling__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! ./modules/scrolling */ "./src/js/modules/scrolling.js");
+/* harmony import */ var _modules_drop__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! ./modules/drop */ "./src/js/modules/drop.js");
+
+
 
 
 
@@ -4439,6 +4443,8 @@ window.addEventListener('DOMContentLoaded', function () {
   Object(_modules_pictureSize__WEBPACK_IMPORTED_MODULE_8__["default"])('.sizes-block');
   Object(_modules_accordion__WEBPACK_IMPORTED_MODULE_9__["default"])('.accordion-heading');
   Object(_modules_burger__WEBPACK_IMPORTED_MODULE_10__["default"])('.burger-menu', '.burger');
+  Object(_modules_scrolling__WEBPACK_IMPORTED_MODULE_11__["default"])('.pageup');
+  Object(_modules_drop__WEBPACK_IMPORTED_MODULE_12__["default"])();
 });
 
 /***/ }),
@@ -4599,6 +4605,101 @@ var checkTextInputs = function checkTextInputs(selector) {
 };
 
 /* harmony default export */ __webpack_exports__["default"] = (checkTextInputs);
+
+/***/ }),
+
+/***/ "./src/js/modules/drop.js":
+/*!********************************!*\
+  !*** ./src/js/modules/drop.js ***!
+  \********************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var core_js_modules_es_function_name__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! core-js/modules/es.function.name */ "./node_modules/core-js/modules/es.function.name.js");
+/* harmony import */ var core_js_modules_es_function_name__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(core_js_modules_es_function_name__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var core_js_modules_es_string_split__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! core-js/modules/es.string.split */ "./node_modules/core-js/modules/es.string.split.js");
+/* harmony import */ var core_js_modules_es_string_split__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(core_js_modules_es_string_split__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var core_js_modules_web_dom_collections_for_each__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! core-js/modules/web.dom-collections.for-each */ "./node_modules/core-js/modules/web.dom-collections.for-each.js");
+/* harmony import */ var core_js_modules_web_dom_collections_for_each__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(core_js_modules_web_dom_collections_for_each__WEBPACK_IMPORTED_MODULE_2__);
+
+
+
+
+
+
+var drop = function drop() {
+  // События, которые используются при drag and drop функциональности (перестаскивание элементов). Со звёздчкой те события, которые срабатывают при перетаскивание DOM-элементов на странице. Другие же срабатывают при перетаскивание файлов из файловой системы.
+  // drag *
+  // dragend*
+  // dragenter - объект над dropArea (любой элемент, который воспринимает это событие)
+  // dragexit*
+  // dragleave - объект перетащили за пределы dropArea
+  // dragover - объект зависает над dropArea
+  // dragstart*
+  // drop - объект отправлен в dropArea
+  var fileInputs = document.querySelectorAll('[name="upload"]');
+  ['dragenter', 'dragleave', 'dragover', 'drop'].forEach(function (eventName) {
+    fileInputs.forEach(function (input) {
+      input.addEventListener(eventName, preventDefaults, false);
+    });
+  });
+
+  function preventDefaults(e) {
+    e.preventDefault();
+    e.stopPropagation(); // Остановка всплытия
+  }
+
+  function highLight(item) {
+    item.closest('.file_upload').style.border = '5px solid yellow';
+    item.closest('.file_upload').style.backgroundColor = 'rgba(0,0,0, .7)';
+  } // Подсветка элемента, в который переставскивается файл(изображение)
+
+
+  function unhighLight(item) {
+    item.closest('.file_upload').style.border = 'none';
+
+    if (item.closest('.calc_form')) {
+      item.closest('.file_upload').style.backgroundColor = '#fff';
+    } else {
+      item.closest('.file_upload').style.backgroundColor = '#ededed';
+    }
+  }
+
+  ['dragenter', 'dragover'].forEach(function (eventName) {
+    fileInputs.forEach(function (input) {
+      input.addEventListener(eventName, function () {
+        return highLight(input);
+      }, false);
+    });
+  }); // Берем 2 события, перебираем файловые инпуты, с которыми будем работать и на каждый инпут навешиваем это событие и ставим обработчик
+
+  ['dragleave', 'drop'].forEach(function (eventName) {
+    fileInputs.forEach(function (input) {
+      input.addEventListener(eventName, function () {
+        return unhighLight(input);
+      }, false);
+    });
+  });
+  fileInputs.forEach(function (input) {
+    input.addEventListener('drop', function (e) {
+      input.files = e.dataTransfer.files; // Тот объект с файлом, который мы перетаскиваем, засовываем его в инпут
+
+      var dots;
+      var arr = input.files[0].name.split('.'); // Превратить в массив
+      // 'safasfajsfjsjf.jpg' => ['fsafasfasf', 'jpg']
+
+      arr[0].length > 6 ? dots = '...' : dots = '.'; // Условие на проверку длины изображения
+
+      var name = arr[0].substring(0, 6) + dots + arr[1]; // Обрезаем пришедшее название изображения + ... или . +  обрежется по 6 элемент (0-5)
+
+      input.previousElementSibling.textContent = name; // Свойство чтобы найти предыдущего соседа
+    });
+  });
+};
+
+/* harmony default export */ __webpack_exports__["default"] = (drop);
 
 /***/ }),
 
@@ -5077,6 +5178,114 @@ var pictureSize = function pictureSize(imgSelector) {
 };
 
 /* harmony default export */ __webpack_exports__["default"] = (pictureSize);
+
+/***/ }),
+
+/***/ "./src/js/modules/scrolling.js":
+/*!*************************************!*\
+  !*** ./src/js/modules/scrolling.js ***!
+  \*************************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var core_js_modules_web_dom_collections_for_each__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! core-js/modules/web.dom-collections.for-each */ "./node_modules/core-js/modules/web.dom-collections.for-each.js");
+/* harmony import */ var core_js_modules_web_dom_collections_for_each__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(core_js_modules_web_dom_collections_for_each__WEBPACK_IMPORTED_MODULE_0__);
+
+
+
+
+var scrolling = function scrolling(upSelector) {
+  var upElem = document.querySelector(upSelector);
+  window.addEventListener('scroll', function () {
+    if (document.documentElement.scrollTop > 1650) {
+      upElem.classList.add('animated', 'fadeIn');
+      upElem.classList.remove('fadeOut');
+    } else {
+      upElem.classList.add('fadeOut');
+      upElem.classList.remove('fadeIn');
+    }
+  }); // Скролл window.requestAnimationFrame()
+
+  var links = document.querySelectorAll('[href^="#"]'),
+      // Ищем все ссылки, начинающиеся с шарпа(#), ^ значит, что данное значение атрибута должно быть с начала строки
+  speed = 0.3;
+  links.forEach(function (link) {
+    link.addEventListener('click', function (event) {
+      event.preventDefault();
+      var widthTop = document.documentElement.scrollTop,
+          hash = this.hash,
+          toBlock = document.querySelector(hash).getBoundingClientRect().top,
+          start = null;
+      requestAnimationFrame(step);
+
+      function step(time) {
+        if (start === null) {
+          start = time;
+        }
+
+        var progress = time - start,
+            r = toBlock < 0 ? Math.max(widthTop - progress / speed, widthTop + toBlock) : Math.min(widthTop + progress / speed, widthTop + toBlock); // Количество пикселей, на которые нужно пролистать в течение этой анимации
+
+        document.documentElement.scrollTo(0, r);
+
+        if (r != widthTop + toBlock) {
+          requestAnimationFrame(step);
+        } else {
+          location.hash = hash;
+        }
+      }
+    });
+  }); //Чистый js скролл
+  // const element = document.documentElement,
+  //   body = document.body;
+  // const calcScroll = () => {
+  //   upElem.addEventListener('click', function (event) {
+  //     let scrollTop = Math.round(body.scrollTop || element.scrollTop); // Узнаём, какое расстояние было пролистано вниз
+  //     if (this.hash !== '') {
+  //       event.preventDefault();
+  //       // let hashElement = document.getElementById(this.hash.substring(1)), // Получаем от хэша строчку без первой решетки
+  //       let hashElement = document.querySelector(this.hash), // Другой вариант
+  //         hashElementTop = 0; // Сколько нужно ещё пролистать пикселей до родителя хэш элемента
+  //       while (hashElement.offsetParent) {
+  //         hashElementTop += hashElement.offsetTop; // Сколько пикселей осталось до верхней границы родительского элемента от хэш элемента
+  //         hashElement = hashElement.offsetParent; // Перебор всех родителей, которые могут быть основой для позиционирования данного элемента
+  //       } // Тот элемент, относительно которого будет позиционироваться хэш элемент
+  //       hashElementTop = Math.round(hashElementTop); // Округляем элемент
+  //       smoothScroll(scrollTop, hashElementTop, this.hash);
+  //     }
+  //   });
+  // };
+  // const smoothScroll = (from, to, hash) => {
+  //   let timeInterval = 1,
+  //     prevScrollTop,
+  //     speed;
+  //   if (to > from) {
+  //     speed = 30;
+  //   } else {
+  //     speed = -30;
+  //   }
+  //   let move = setInterval(function () {
+  //     let scrollTop = Math.round(body.scrollTop || element.scrollTop);
+  //     if (
+  //       prevScrollTop === scrollTop ||
+  //       (to > from && scrollTop >= to) ||
+  //       (to < from && scrollTop <= to)
+  //     ) {
+  //       clearInterval(move);
+  //       history.replaceState(history.state, document.title, location.href.replace(/#.*$/g, '') + hash);
+  //     } else {
+  //       body.scrollTop += speed;
+  //       element.scrollTop += speed;
+  //       prevScrollTop = scrollTop;
+  //     }
+  //   }, timeInterval);
+  // };
+  // calcScroll();
+};
+
+/* harmony default export */ __webpack_exports__["default"] = (scrolling);
 
 /***/ }),
 
